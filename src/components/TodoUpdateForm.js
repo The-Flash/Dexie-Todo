@@ -1,39 +1,32 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { SelectedTodoContext } from "../context";
 import db from "../db";
+import BackButton from "./BackButton";
 import Button from "./Button";
 import Header from "./Header";
 
-export default function TodoCreateForm() {
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [completed, setCompleted] = useState(false);
-
-    const reset = () => {
-        setTitle("");
-        setDescription("");
-        setCompleted(false);
-    }
+export default function TodoUpdateForm({ todo, onBackPress }) {
+    const {
+        title: defaultTitle,
+        description: defaultDescription,
+        completed: defaultCompleted
+    } = todo;
+    const [title, setTitle] = useState(defaultTitle);
+    const [description, setDescription] = useState(defaultDescription);
+    const [completed, setCompleted] = useState(defaultCompleted);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            await db.todos.add({
-                title,
-                description,
-                completed
-            });
-            reset();
-        } catch (error) {
-            console.error(error)
-        }
-        // trigger notification
+        const editingTodo = await db.todos.update(todo.id, {
+            title, description, completed
+        });
     }
+
     return (
         <form onSubmit={handleSubmit}>
-            <Header title="Create A To-Do" />
+            <Header title="Update To-Do" />
             <div className="my-4">
                 <input
-                    required
                     className="w-full border p-2 focus:outline-2 focus:outline-slate-300"
                     placeholder="Title"
                     name="title"
@@ -43,7 +36,6 @@ export default function TodoCreateForm() {
             </div>
             <div className="my-4">
                 <textarea
-                    required
                     onChange={e => setDescription(e.target.value)}
                     className="w-full border p-2 focus:outline-2 focus:outline-slate-300"
                     placeholder="Description"
@@ -55,8 +47,13 @@ export default function TodoCreateForm() {
             </div>
             <div className="my-4">
                 <Button>
-                    Create
+                    Save
                 </Button>
+            </div>
+            <div className="my-4">
+                <BackButton onClick={onBackPress}>
+                    Save
+                </BackButton>
             </div>
         </form>
     )
